@@ -46,11 +46,26 @@ const register = async (req, res) => {
       gender,
     });
 
-    sendWelcomingEmail(email, name);
+    // sendWelcomingEmail(email, name);
+    // console.log(userDetails);
+
+    // get the user id
+    const id = userDetails._id;
+
+    //  generating verification token
+    const verifyToken = jwt.sign({ id }, process.env.JWTSECRECTKEY, {
+      expiresIn: "1h",
+    });
+
+    // include slash before token so route matches /auth/verify/:token
+    const url = `http://localhost:4001/auth/verify/${verifyToken}`;
+    sendVerifyEmail(email, url);
+    console.log(url);
 
     return res.status(201).json({
       status: "true",
-      message: "User registered successfully",
+      message:
+        "user created successfully, check your email to verify your Account",
       data: { name, username, email },
     });
   } catch (error) {
@@ -118,4 +133,26 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const verify = async (req, res) => {
+  const { token } = req.params;
+  try {
+    // verify will throw if invalid/expired
+    const payload = jwt.verify(token, process.env.JWTSECRECTKEY);
+    const userId = payload.id;
+
+    // update the user record to mark as verified
+    const user = await User.findByIdAndUpdate(userId, { isVerify: true });
+    sendWelcomingEmail(user.email, user.name);
+    return res
+      .status(200)
+      .json({ status: true, message: "Email successfully verified" });
+  } catch (err) {
+    console.log(err);
+    // differentiate expired/invalid
+    const msg =
+      err.name === "TokenExpiredError" ? "Token expired" : "Invalid token";
+    return res.status(400).json({ status: false, message: msg });
+  }
+};
+
+module.exports = { register, login, verify };

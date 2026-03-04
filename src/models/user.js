@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
-  
   name: {
     type: String,
     required: [true, "Name is required"],
@@ -27,19 +26,23 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
- 
+
   password: {
     type: String,
     required: [true, "Password is required"],
   },
   age: {
     type: Number,
-     min: [18, "Age must be at least 18"],
+    min: [18, "Age must be at least 18"],
     max: [100, "Age must be less than or equal to 100"],
   },
-  gender : {
+  gender: {
     type: String,
-  }
+  },
+  isVerify: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = User = mongoose.model("User", UserSchema);

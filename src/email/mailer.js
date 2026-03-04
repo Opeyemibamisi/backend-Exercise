@@ -8,12 +8,12 @@ let transporter = nodemailer.createTransport({
   },
 });
 
-const mailoptions = (email, subject, text) => {
+const mailoptions = (email, subject, html) => {
   return {
     from: process.env.EMAIL,
     to: email,
     subject,
-    text,
+    html,
   };
 };
 
@@ -30,4 +30,17 @@ const sendWelcomingEmail = (email, name) => {
   });
 };
 
-module.exports = { transporter, sendWelcomingEmail };
+
+const sendVerifyEmail = (email, url) => {
+  const options = mailoptions(
+    email,
+    "Verify Email",
+    `<p>please verify your mail <a href="${url}">verify email </a> </p>`,
+  );
+  transporter.sendMail(options, (error, info) => {
+    if (error) return console.log(error);
+    console.log("Message sent: %s", info.messageId);
+  });
+};
+
+module.exports = { transporter, sendWelcomingEmail, sendVerifyEmail };
